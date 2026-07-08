@@ -1,0 +1,24 @@
+{
+  "framework": "value",
+  "version": "1.0.0",
+  "project_name": "",
+  "created_at": "",
+  "preferences": {
+    "story_timebox_minutes": 10,
+    "one_pr_per_story": true,
+    "tests_required": true,
+    "max_scaffold_per_phase": 1,
+    "revisit_after_every_story": true,
+    "replan_roadmap_requires_confirmation": true
+  },
+  "paths": {
+    "root": ".value",
+    "prd": ".value/PRD.md",
+    "spec": ".value/SPEC.md",
+    "roadmap": ".value/ROADMAP.md",
+    "state": ".value/STATE.md",
+    "steering": ".value/STEERING.md",
+    "changelog": ".value/CHANGELOG.md",
+    "phases": ".value/phases"
+  }
+}
