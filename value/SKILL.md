@@ -2,10 +2,12 @@
 name: value
 description: >
   Spec-driven development focused on user value. Use when starting a new feature
-  or project, writing a PRD, creating technical specs, breaking work into phases
-  and atomic user stories, or executing one-story-per-PR Ralph loops. Commands:
-  /value:start, /value:spec, /value:roadmap, /value:phase, /value:story,
-  /value:revisit, /value:progress.
+  or project, writing a PRD, creating technical specs, breaking work into phases,
+  or executing one-story-per-PR Ralph loops. When explicitly invoked for a new
+  feature or project without a subcommand, ALWAYS begin with collaborative
+  requirements questioning and PRD approval. Do not implement immediately.
+  Commands: /value:start, /value:spec, /value:roadmap, /value:phase,
+  /value:story, /value:revisit, /value:progress.
 ---
 
 # Value
@@ -13,6 +15,24 @@ description: >
 **Know the destination. Detail the next step. Ship user value every iteration.**
 
 Value is a spec-driven development framework where **user value** is the north star — not context engineering, not ceremony. It combines gstack-style PRD questioning, rolling-wave phase planning, atomic user stories (~10 min, one PR, tests), and a Ralph loop per story.
+
+## Mandatory invocation routing
+
+When `$value` is invoked without an explicit subcommand:
+
+- If the user proposes a new project or feature, treat it as `/value:start`.
+- Read and execute `workflows/start.md` and `references/questioning.md`.
+- Ask one requirements question at a time.
+- Do not write code or implementation files.
+- Do not skip questioning because the request appears concrete.
+- Continue until users, problem, value, v1 scope, exclusions, constraints, edge cases, and success criteria are understood.
+- Present a PRD summary and obtain explicit approval before `/value:spec`.
+
+Implementation is prohibited until the workflow has completed:
+
+`start → approved PRD → spec → roadmap → phase → story`
+
+A request such as "build", "create", or "implement" does not override these gates when `$value` is explicitly invoked.
 
 ## Install
 
