@@ -26,7 +26,12 @@ if [[ "${1:-}" == "--handoff" ]]; then
   shift
 fi
 WHEN="${1:?usage: resume-at.sh [--handoff] <reset-time>}"
-PROJECT_DIR="$(cd "$(dirname "$0")/../../../.." && pwd)"
+# Captured from the caller's cwd, not derived from $0 — this script is
+# installed globally (~/.claude/skills/...), so its own path says nothing
+# about which project invoked it. nohup preserves the invoking shell's cwd,
+# so this is reliable as long as the caller launches it from the project
+# directory (as the auto-continue skill does).
+PROJECT_DIR="$(pwd)"
 BUFFER_SECONDS=120
 MAX_RETRIES=6
 RETRY_DELAY=600

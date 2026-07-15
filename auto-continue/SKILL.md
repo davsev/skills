@@ -135,15 +135,24 @@ Pick whichever mechanism this environment supports, in this order:
      the first unfinished next step.` For an immediate handoff, fire the
      trigger right away (or set `run_once_at` one minute out).
 2. **Local CLI session**: launch the bundled resume script, detached, so it
-   survives this session ending:
+   survives this session ending. Locate the script first — this skill may be
+   installed per-project (`.claude/skills/auto-continue/scripts/resume-at.sh`)
+   or globally (`~/.claude/skills/auto-continue/scripts/resume-at.sh`); check
+   which path actually exists and use that one. The script determines the
+   project directory from the caller's cwd, so it MUST be launched with the
+   project directory as the current working directory regardless of where
+   the script itself lives:
 
    ```bash
+   RESUME_SCRIPT=.claude/skills/auto-continue/scripts/resume-at.sh
+   [ -f "$RESUME_SCRIPT" ] || RESUME_SCRIPT=~/.claude/skills/auto-continue/scripts/resume-at.sh
+
    # continue style — resumes this conversation
-   nohup bash .claude/skills/auto-continue/scripts/resume-at.sh <reset-epoch> \
+   nohup bash "$RESUME_SCRIPT" <reset-epoch> \
      >> .claude/auto-continue/resume.log 2>&1 &
 
    # handoff style — starts a fresh session with a clean context
-   nohup bash .claude/skills/auto-continue/scripts/resume-at.sh --handoff <reset-epoch> \
+   nohup bash "$RESUME_SCRIPT" --handoff <reset-epoch> \
      >> .claude/auto-continue/resume.log 2>&1 &
    ```
 
@@ -152,6 +161,10 @@ Pick whichever mechanism this environment supports, in this order:
    `--continue` in continue style, or as a brand-new session in handoff
    style. If the limit turns out not to be lifted yet, it backs off 10
    minutes and retries (up to 6 times).
+
+   After launching, verify the process actually started (`jobs -l` or `ps`
+   for the PID) — a silently-failed `nohup` (e.g. wrong script path) looks
+   identical to success from the shell's perspective.
 3. **Neither available**: tell the user the exact reset time and the one
    command to run after it — `claude --continue` (continue) or plain
    `claude` (handoff) — the checkpoint file does the rest, because RESUME
