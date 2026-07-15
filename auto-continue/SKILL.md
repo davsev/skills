@@ -9,7 +9,11 @@ description: >
   resume at reset time, and on resume continues from where the work left off.
   Also supports a handoff option ("handoff", "fresh session", "clean context",
   "clear the conversation") that continues the work in a new session with a
-  clean context instead of resuming the old conversation.
+  clean context instead of resuming the old conversation. Also invoke
+  proactively, *before* any limit message appears, when about to kick off a
+  long or unattended run (a background Task agent, a multi-step pipeline, an
+  autonomous loop) that nobody will be watching in real time — see "Proactive
+  arming" below.
 ---
 
 # Auto-continue after the 5-hour usage limit
@@ -80,6 +84,7 @@ Write `.claude/auto-continue/checkpoint.md` (create the directory if needed):
 status: armed
 armed_at: <ISO-8601 now>
 resume_at: <ISO-8601 reset time, or "now" for an immediate handoff>
+resume_pid: <PID of the launched resume-at.sh, once Step 3 runs — omit until then>
 style: continue | handoff
 branch: <current git branch>
 ---
@@ -172,6 +177,50 @@ Pick whichever mechanism this environment supports, in this order:
 
 Finally, confirm to the user in one line: what was checkpointed, when the
 resume fires, and by which mechanism.
+
+## Proactive arming (long/unattended runs)
+
+**Why this exists:** once the limit is *actually* hit, the session can be
+blocked hard enough that no tool call succeeds at all — not even the ones
+ARM mode itself needs (writing the checkpoint, launching the resume script).
+Reacting to the limit message only works if some execution headroom is left
+when it appears; for a long unattended run (a background Task agent, a
+multi-step pipeline, an autonomous loop) that headroom can vanish between
+one check and the next with nobody there to react in time. The fix is to
+arm *before* the wall, so nothing new needs to execute once it's hit.
+
+Do this whenever you're about to start a run you expect to take a
+meaningful chunk of the remaining window, or that nobody will be watching
+in real time:
+
+1. **Estimate a reset time now**, using Step 1's method 2 (window start + 5h,
+   rounded up) — don't wait for a limit message, there may not be time to
+   react to one. It doesn't need to be exact: the resume script retries on a
+   10-minute backoff if it fires early.
+2. **Write the checkpoint now** (Step 2), with whatever Task/Next-steps are
+   known at this point. It's fine if "Done so far" is empty — the point is
+   that *a* checkpoint exists before anything can go wrong.
+3. **Schedule the resume now** (Step 3), using the estimated time. Capture
+   the backgrounded process's PID (`$!` right after the `nohup ... &` line)
+   and add it to the checkpoint frontmatter as `resume_pid: <pid>` — this is
+   what lets you cancel or replace the schedule later without guessing which
+   process it is.
+4. **Refresh the checkpoint at each natural milestone** as the run
+   progresses (e.g. after each completed step of a pipeline): update "Done
+   so far" / "Next steps" / "State" in place. This is a plain file write, not
+   a re-schedule — leave `resume_pid` and `resume_at` untouched.
+5. **On normal completion**, before the limit hits: disarm. Check whether
+   `resume_pid` is still running (`ps -p "$resume_pid"`) and if so, kill it
+   — otherwise a resume will still fire later against already-finished work.
+   Set `status: done` in the checkpoint (keep the file for a record; don't
+   delete it).
+6. **If a limit message arrives anyway** while proactively armed and there's
+   still headroom to act: reconcile rather than stack a second schedule —
+   kill the existing `resume_pid`, update `resume_at` to the authoritative
+   time from the message, relaunch the resume script, and record the new
+   PID. If there's no headroom left (no tool call succeeds), that's fine:
+   the schedule from step 3 is already in flight and will pick up whatever
+   the checkpoint said at its last refresh.
 
 ## RESUME mode
 
