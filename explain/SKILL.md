@@ -1,6 +1,6 @@
 ---
 name: explain
-description: Called explicitly via "/explain <url>". Accepts a GitHub PR URL or any document URL and produces a rich, self-contained, RTL Hebrew HTML page with visual diagrams, file change cards, code snippets, commit timeline, and alert/success boxes. Output is always a single HTML code block — never written to disk.
+description: Called explicitly via "/explain <url>". Accepts a GitHub PR URL or any document URL and produces a rich, self-contained, RTL Hebrew HTML page with visual diagrams, file change cards, code snippets, commit timeline, and alert/success boxes. Writes the HTML to /tmp/explain-output.html and opens it in the browser.
 disable-model-invocation: true
 ---
 
@@ -15,13 +15,13 @@ Produces a self-contained, dark-themed HTML page that explains a GitHub PR or do
 /explain https://any-document-url
 ```
 
-Output is always a **single HTML code block** in the chat — never written to disk. Paste it into a browser or save it as a `.html` file to view.
+Output is written to `/tmp/explain-output.html` and immediately opened in the browser with `open /tmp/explain-output.html`. No code block in chat needed.
 
 ## Workflow
 
 1. **Fetch the content** — fetch the URL or read an uploaded diff/document file the user attached.
 2. **Identify the key information** — for PRs: files modified, lines added/removed, commit messages, review comments. For documents: sections, key points, structure.
-3. **Build the HTML** — use the template below. Always include what is relevant to the content type:
+3. **Write and open** — write the HTML to `/tmp/explain-output.html`, then run `open /tmp/explain-output.html` to launch it in the default browser.
    - Header with title, author, date, source link
    - Purpose/summary section in plain Hebrew
    - Visual comparison (before/after, version bumps, icon changes) — if applicable
