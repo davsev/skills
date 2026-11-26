@@ -7,6 +7,7 @@ Agent skills for Claude Code. Run `./install.sh` to symlink skills into `~/.clau
 | Skill | Description |
 |-------|-------------|
 | `auto-continue` | Survive usage limits with checkpoint + resume |
+| `terse` | Ultra-compressed responses (lite/full/ultra) |
 | `value` | Spec-driven development focused on user value |
 | `whatsapp-archive-tracker` | Scan archived WhatsApp groups, sync admins to Google Sheets by phone number, and check outreach status |
 
